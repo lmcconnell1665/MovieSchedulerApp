@@ -1,5 +1,6 @@
 # Luke McConnell
-# 2/17/20 Updated: 2/24/20
+# Created: 2/17/20
+# Updated: 2/24/20
 # BZAN 544
 
 # Uses pyomo solver to create a schedule for a theatre

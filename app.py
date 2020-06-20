@@ -1,6 +1,6 @@
 # Luke McConnell
-# 2/24/20
-# BZAN 544
+# Last updated: 2/24/20
+# Created for: BZAN 544
 
 # Movie schedule creating application
 
@@ -37,13 +37,13 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 app.layout = html.Div([ #contains everything on page, necessary for styling like page background etc.
     
     html.Div([
-        html.H2('Movie Schedules'), #Dashboard title
+        html.H2('LM Theatre Chain: Movie Showtime Schedule'), #Dashboard title
         ], style={'width': '49%', 'display': 'inline-block', 'vertical-align': 'top'}), #closes title html.Div
     
     html.Div([
         html.P([
                 html.Div([
-                'Choose a Cinema to view the schedule:', #Dropdown instructions 
+                'Choose a Cinema location to view the schedule:', #Dropdown instructions 
                 #Cinema selection dropdown
                 dcc.Dropdown(
                     id = 'Dropdown', 
@@ -60,7 +60,7 @@ app.layout = html.Div([ #contains everything on page, necessary for styling like
     ]), #closes the graph html.div
     
     html.Div([
-        html.H3('Theatre Show Schedule'),
+        html.H3('Cinema Show Schedule'),
         dash_table.DataTable(id='table') #closes the table html.div
     ]) #closes the html.Div
 ]) #closes layout section
