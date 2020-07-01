@@ -49,7 +49,7 @@ app.layout = html.Div([ #contains everything on page, necessary for styling like
                     id = 'Dropdown', 
                     options = TheatreNames, 
                     multi = False,
-                    value = 'TB_original_Schedules.csv'
+                    value = 'Pinnacle_8_Schedules.csv'
                 )], style={'width': '49%', 'display': 'inline-block', 'marginBottom': 20}), #closes dropdown html.Div
         ]) #closes html.P
     ]), #closes html.Div
