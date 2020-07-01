@@ -1,5 +1,6 @@
 # Luke McConnell
-# 2/17/20 Updated: 2/24/20
+# Created: 2/17/20
+# Updated: 2/24/20
 # BZAN 544
 
 # Uses pyomo solver to create a schedule for a theatre
@@ -9,6 +10,7 @@ import numpy as np
 import datetime
 from datetime import timedelta
 from pyomo.environ import *
+from pyomo.opt import SolverFactory
 
 def GenerateSchedule(bookingDF, 
                      detailsDF, 
@@ -28,7 +30,7 @@ def GenerateSchedule(bookingDF,
     totalMinutes = (endTime-startTime).total_seconds()/60
     
     # number of time units needed.
-    numTU = floor(totalMinutes/TUsize) # flooring keeps everything within bounds.
+    numTU = np.floor(totalMinutes/TUsize) # flooring keeps everything within bounds.
 
     # reading the bookings file.
     TB = bookingDF
@@ -48,7 +50,7 @@ def GenerateSchedule(bookingDF,
     # Parameters...
     movies = TB.Print_Film
     theatres = list(range(numTh))
-    timeUnits = list(range(numTU))
+    timeUnits = list(range(int(numTU)))
 
     # lesser params...
     # Creates a dictionary of the number of time units need to show a movie by movie.
@@ -80,7 +82,8 @@ def GenerateSchedule(bookingDF,
                 [
                     model.startTimes[m,th,lil_t] 
                     for m in movies
-                    for lil_t in range(max(0,t+1-moviePostTimeUnits[m]), min(numTU,t+ moviePreTimeUnits[m])) 
+                    for lil_t in range(int(max(0,t+1-moviePostTimeUnits[m])), int(min(numTU,t+ moviePreTimeUnits[m])))
+
                 ]) <=1)
 
     model.movieMinimumShows = ConstraintList()
@@ -98,7 +101,7 @@ def GenerateSchedule(bookingDF,
                 [
                     model.startTimes[m,th,lil_t] 
                     for th in theatres 
-                    for lil_t in range(t, min(numTU,t + ceil(15/TUsize))) # converting 15 minutes to time intervals.
+                    for lil_t in range(t, int(min(numTU,t + ceil(15/TUsize)))) # converting 15 minutes to time intervals.
                 ]) <= 1 )
 
     model.setTheMinMovieTimeDiff = ConstraintList()
@@ -109,10 +112,11 @@ def GenerateSchedule(bookingDF,
                             model.setTheMinMovieTimeDiff.add(
                                 model.minMovieTimeDiff[m] <= t - s + numTU*(2 - sum([model.startTimes[m, th, t] + model.startTimes[m, th, s] for th in theatres]))
                             )
-    #model.minMovieTimeDiff[m] <= 4*numTU + (-2*numTU + t)model.startTimes[m, th1, t] + (-2*numTU + s)model.startTimes[m, th2, s]
 
-    results = SolverFactory('glpk').solve(model, timelimit = 60*1)
-    #results.write() # comment out to prevent solver output from printing to the console
+    # model.minMovieTimeDiff[m] <= 4*numTU + (-2*numTU + t)model.startTimes[m, th1, t] + (-2*numTU + s)model.startTimes[m, th2, s]
+
+    results = SolverFactory('glpk', executable='/Users/lukemcconnell/miniconda3/bin/glpsol').solve(model, timelimit = 60*60)
+    results.write() # comment out to prevent solver output from printing to the console
 
     # extracting the variable from the solved model
     extractedStartTimes = model.startTimes.extract_values()
@@ -125,7 +129,7 @@ def GenerateSchedule(bookingDF,
             startTimesDF = startTimesDF.append(pd.DataFrame([list(index)], columns = cols), ignore_index = True)
 
     # Converting the timeUnits into actual Date/times and adding it to the dataframe.
-    startTimesDF['startTimeDate'] = [startTime + datetime.timedelta(seconds =60*tU*TUsize)  for tU in startTimesDF.timeUnit]
+    startTimesDF['startTimeDate'] = [startTime + datetime.timedelta(seconds =60*tU*TUsize) for tU in startTimesDF.timeUnit]
 
     startTimesDF['endTimeDate'] = [startTime + datetime.timedelta(seconds =int(60*row[1].timeUnit*TUsize + 60*movieRunTimes[row[1].movie])) for row in startTimesDF.iterrows()]
     
@@ -164,7 +168,7 @@ def GenerateSchedule(bookingDF,
     return startTimesDF
 
 if __name__ == "__main__":
-    aSchedule = GenerateSchedule(pd.read_csv("DataIn/TB_original" + "/Theatre_Bookings.csv"), 
-                     pd.read_csv("DataIn/TB_original" + "/Theatre_Details.csv"), 
+    aSchedule = GenerateSchedule(pd.read_csv("DataIn/Pinnacle_8" + "/Theatre_Bookings.csv"), 
+                     pd.read_csv("DataIn/Pinnacle_8" + "/Theatre_Details.csv"), 
                     )
     print(aSchedule)
