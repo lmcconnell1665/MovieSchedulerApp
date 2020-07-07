@@ -124,4 +124,4 @@ def update_graph(cinema):
         return gantt, columns, data
         
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run_server(host="0.0.0.0",debug=True)
